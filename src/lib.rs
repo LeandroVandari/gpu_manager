@@ -5,6 +5,7 @@ use wgpu::{
     Adapter, Backends, Device, DeviceDescriptor, Features, Instance, InstanceDescriptor, Queue,
     RequestAdapterOptions, Surface, SurfaceConfiguration, TextureFormat, TextureUsages,
 };
+#[cfg(feature = "window")]
 use winit::window::{Window, WindowAttributes};
 
 pub struct GpuManager<SurfaceManager = ()> {
@@ -50,6 +51,7 @@ impl GpuManager<()> {
     }
 }
 
+#[cfg(feature = "window")]
 impl<'window> GpuManager<WindowManager<'window>> {
     pub async fn with_window(event_loop: &winit::event_loop::ActiveEventLoop) -> Result<Self> {
         let instance = Self::create_instance();
@@ -150,7 +152,7 @@ impl<'window> GpuManager<WindowManager<'window>> {
         })
     }
 }
-
+#[cfg(feature = "window")]
 pub struct WindowManager<'window> {
     window: Arc<Window>,
     surface: Surface<'window>,
