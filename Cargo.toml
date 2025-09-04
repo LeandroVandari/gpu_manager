@@ -1,0 +1,10 @@
+[package]
+name = "gpu_manager"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.99"
+log = "0.4.28"
+wgpu = "26.0.1"
+winit = "0.30.12"
