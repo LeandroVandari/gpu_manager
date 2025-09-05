@@ -8,6 +8,10 @@ use wgpu::{
 #[cfg(feature = "window")]
 use winit::window::{Window, WindowAttributes};
 
+/// Manages Device creation and basic configuration.
+///
+/// This is the main struct provided by this crate. In order to obtain a [`GpuManager`] instance, use
+/// [`GpuManager::simple`] or [`GpuManager::with_window`].
 pub struct GpuManager<SurfaceManager = ()> {
     surface_manager: SurfaceManager,
     device: Device,
@@ -15,10 +19,11 @@ pub struct GpuManager<SurfaceManager = ()> {
 }
 
 impl<SurfaceManager> GpuManager<SurfaceManager> {
+    /// Returns a reference to the contained [`wgpu::Device`].
     pub fn device(&self) -> &Device {
         &self.device
     }
-
+    /// Returns a reference to the contained [`wgpu::Queue`].
     pub fn queue(&self) -> &Queue {
         &self.queue
     }
@@ -34,6 +39,21 @@ impl<SurfaceManager> GpuManager<SurfaceManager> {
 }
 
 impl GpuManager<()> {
+    /// Creates a [`GpuManager`] *without* window display capabilities.
+    ///
+    /// To be used without a window.
+    ///
+    /// Since creating an [`Adapter`] is async, this is also an async function.
+    ///
+    /// # Examples
+    /// ```
+    /// use gpu_manager::GpuManager;
+    ///
+    /// let manager = pollster::block_on(GpuManager::simple()).unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// This will error if [`Adapter`] or [`Device`] creation fail.
     pub async fn simple() -> Result<Self> {
         let instance = Self::create_instance();
         log::trace!("Creating wgpu Adapter...");
@@ -56,6 +76,14 @@ impl GpuManager<()> {
 
 #[cfg(feature = "window")]
 impl<'window> GpuManager<WindowManager<'window>> {
+    /// Creates a [`GpuManager`] along with a [`Window`] that it will be able to display to.
+    ///
+    /// Since creating an [`Adapter`] is async, this is also async.
+    ///
+    /// Call this inside the [`ApplicationHandler::resumed`](winit::application::ApplicationHandler::resumed) function.
+    ///
+    /// # Errors
+    /// This will error if 1) [`Adapter`] or [`Device`] creation fail, or 2) [`Surface`] configuration fails.
     pub async fn with_window(event_loop: &winit::event_loop::ActiveEventLoop) -> Result<Self> {
         let instance = Self::create_instance();
 
@@ -92,14 +120,17 @@ impl<'window> GpuManager<WindowManager<'window>> {
         })
     }
 
+    /// Returns a reference to the contained [`SurfaceConfiguration`].
     pub fn config(&self) -> &SurfaceConfiguration {
         &self.surface_manager.config
     }
 
+    /// Returns a reference to the contained [`Surface`].
     pub fn surface(&self) -> &Surface<'window> {
         &self.surface_manager.surface
     }
 
+    /// Returns a counted reference to the contained [`Window`].
     pub fn window(&self) -> Arc<Window> {
         self.surface_manager.window.clone()
     }
@@ -159,6 +190,7 @@ impl<'window> GpuManager<WindowManager<'window>> {
     }
 }
 #[cfg(feature = "window")]
+/// Manages [`Window`] specific attributes, not needed when drawing to a file, for example.
 pub struct WindowManager<'window> {
     window: Arc<Window>,
     surface: Surface<'window>,

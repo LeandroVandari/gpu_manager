@@ -9,6 +9,9 @@ log = "0.4.28"
 wgpu = "26.0.1"
 winit = {version = "0.30.12", optional = true}
 
+[dev-dependencies]
+pollster = "0.4.0"
+
 [features]
 default=["window"]
 window=["dep:winit"]
