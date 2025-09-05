@@ -57,7 +57,9 @@ impl GpuManager<()> {
     pub async fn simple() -> Result<Self> {
         let instance = Self::create_instance();
         log::trace!("Creating wgpu Adapter...");
-        let adapter = instance.request_adapter(&Default::default()).await?;
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptionsBase::default())
+            .await?;
         log::trace!("Creating wgpu Device...");
         let (device, queue) = adapter
             .request_device(&DeviceDescriptor {
@@ -152,15 +154,6 @@ impl<'window> GpuManager<WindowManager<'window>> {
         adapter: &Adapter,
         window: &Window,
     ) -> Result<SurfaceConfiguration> {
-        let surface_caps = surface.get_capabilities(adapter);
-        log::trace!("Surface capabilities:\n{surface_caps:#?}");
-        let usage = if surface_caps.usages.contains(TextureUsages::COPY_DST) {
-            TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST
-        } else {
-            log::warn!("Surface can't be copy destination. Using compatibility mode.");
-            TextureUsages::RENDER_ATTACHMENT
-        };
-
         fn get_surface_format(available_formats: &[TextureFormat]) -> Result<TextureFormat> {
             let priority_formats = [
                 wgpu::TextureFormat::Rgba8Unorm,
@@ -173,6 +166,15 @@ impl<'window> GpuManager<WindowManager<'window>> {
             }
             bail!("Couldn't get supported surface format, exiting.");
         }
+
+        let surface_caps = surface.get_capabilities(adapter);
+        log::trace!("Surface capabilities:\n{surface_caps:#?}");
+        let usage = if surface_caps.usages.contains(TextureUsages::COPY_DST) {
+            TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST
+        } else {
+            log::warn!("Surface can't be copy destination. Using compatibility mode.");
+            TextureUsages::RENDER_ATTACHMENT
+        };
 
         let surface_format = get_surface_format(&surface_caps.formats)?;
 
