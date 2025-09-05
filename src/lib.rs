@@ -24,6 +24,7 @@ impl<SurfaceManager> GpuManager<SurfaceManager> {
     }
 
     fn create_instance() -> Instance {
+        log::trace!("Creating wgpu Instance...");
         let instance_desc = InstanceDescriptor {
             backends: Backends::all(),
             ..Default::default()
@@ -35,7 +36,9 @@ impl<SurfaceManager> GpuManager<SurfaceManager> {
 impl GpuManager<()> {
     pub async fn simple() -> Result<Self> {
         let instance = Self::create_instance();
+        log::trace!("Creating wgpu Adapter...");
         let adapter = instance.request_adapter(&Default::default()).await?;
+        log::trace!("Creating wgpu Device...");
         let (device, queue) = adapter
             .request_device(&DeviceDescriptor {
                 required_features: Features::empty(),
@@ -57,15 +60,16 @@ impl<'window> GpuManager<WindowManager<'window>> {
         let instance = Self::create_instance();
 
         let window = Arc::new(Self::create_window(event_loop)?);
+        log::trace!("Creating Surface...");
         let surface = instance.create_surface(window.clone())?;
-
+        log::trace!("Creating wgpu Adapter...");
         let adapter = instance
             .request_adapter(&RequestAdapterOptions {
                 compatible_surface: Some(&surface),
                 ..Default::default()
             })
             .await?;
-
+        log::trace!("Creating wgpu Device...");
         let (device, queue) = adapter
             .request_device(&DeviceDescriptor {
                 required_features: Features::empty(),
@@ -74,6 +78,7 @@ impl<'window> GpuManager<WindowManager<'window>> {
             .await?;
 
         let config = Self::create_surface_configuration(&surface, &adapter, &window)?;
+        log::trace!("Configuring Surface...");
         surface.configure(&device, &config);
 
         Ok(Self {
@@ -102,6 +107,7 @@ impl<'window> GpuManager<WindowManager<'window>> {
     fn create_window(
         event_loop: &winit::event_loop::ActiveEventLoop,
     ) -> Result<Window, winit::error::OsError> {
+        log::trace!("Creating window...");
         event_loop.create_window(
             WindowAttributes::default()
                 .with_maximized(true)
@@ -116,7 +122,7 @@ impl<'window> GpuManager<WindowManager<'window>> {
         window: &Window,
     ) -> Result<SurfaceConfiguration> {
         let surface_caps = surface.get_capabilities(adapter);
-        dbg!(&surface_caps);
+        log::trace!("Surface capabilities:\n{surface_caps:#?}");
         let usage = if surface_caps.usages.contains(TextureUsages::COPY_DST) {
             TextureUsages::RENDER_ATTACHMENT | TextureUsages::COPY_DST
         } else {
