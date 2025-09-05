@@ -1,3 +1,10 @@
+//! A simple package to abstract [`wgpu`] creation boilerplate code.
+//!
+//! The base of this package is the [`GpuManager`] struct, which handles the
+//! creation of the common needed [`wgpu`] abstractions, such as [`Device`], [`Instance`], [`Adapter`] etc.
+//!
+//! In order to use with a winit [`Window`], the `window` feature must be enabled.
+
 use std::sync::Arc;
 
 use anyhow::{Result, bail};
@@ -77,6 +84,9 @@ impl GpuManager<()> {
 }
 
 #[cfg(feature = "window")]
+/// A [`GpuManager`] associated with a window.
+///
+/// Only available when the `window` feature is activated.
 impl<'window> GpuManager<WindowManager<'window>> {
     /// Creates a [`GpuManager`] along with a [`Window`] that it will be able to display to.
     ///
