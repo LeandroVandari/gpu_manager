@@ -147,6 +147,18 @@ impl<'window> GpuManager<WindowManager<'window>> {
         self.surface_manager.window.clone()
     }
 
+    /// Splits this [`GpuManager<WindowManager>`] into a [`GpuManager<()>`] and a [`WindowManager`].
+    pub fn split(self) -> (GpuManager<()>, WindowManager<'window>) {
+        (
+            GpuManager {
+                surface_manager: (),
+                device: self.device,
+                queue: self.queue,
+            },
+            self.surface_manager,
+        )
+    }
+
     fn create_window(
         event_loop: &winit::event_loop::ActiveEventLoop,
     ) -> Result<Window, winit::error::OsError> {
