@@ -220,3 +220,20 @@ pub struct WindowManager<'window> {
     surface: Surface<'window>,
     config: SurfaceConfiguration,
 }
+
+impl<'window> WindowManager<'window> {
+    /// Returns a reference to the contained [`SurfaceConfiguration`].
+    pub fn config(&self) -> &SurfaceConfiguration {
+        &self.config
+    }
+
+    /// Returns a reference to the contained [`Surface`].
+    pub fn surface(&self) -> &Surface<'window> {
+        &self.surface
+    }
+
+    /// Returns a counted reference to the contained [`Window`].
+    pub fn window(&self) -> Arc<Window> {
+        self.window.clone()
+    }
+}
